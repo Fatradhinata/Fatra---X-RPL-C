@@ -1,0 +1,119 @@
+# IKI CARA NGEJALANNO PERTAMA KALIE RODOK RIBET REK
+# KUDU NGINSTALL KABEH PACKAGE E
+# AKU RODOK LALI SYNTAX E OPO AE, COBAK GOLEK O CARA NGINSTALL 3 PACKAGE IKI
+
+import face_recognition
+import cv2
+import numpy as np
+
+# LEK IKI GAUSA DI INSTALL, WES DISEDIAKAN SAMA PYTHON
+import time
+
+# KENAPA ADA 0 NYA ? KARNA KALO 0 ITU BRARTI KITA PAKE OPSI KAMERA BAWAAH, KALO 1 dst.. IKU ONOK SENG GAWE WEBCAM
+cam = cv2.VideoCapture(0)
+
+# Fotomu Crop en trus jeneng file e lebokno kene
+face_load = face_recognition.load_image_file("fatra.jpg")
+# Face_encodings (definisie golek en dewe) iku gawe deteksi wajah e (lebih tepatnya mendeteksi posisi detail detail wajah)
+face_encoding = face_recognition.face_encodings(face_load)[0]
+# print(t_encoding)
+
+# NAHHH lek iki face encodings seng ke 2, uncomment en lek pingin nyoba nggawe, lek mek 2 ngene gausa nggawe function gpp
+# face_load2 = face_recognition.load_image_file(".jpg")
+# face_encoding2 = face_recognition.face_encodings(face_laod2)[0]
+
+known_face = [  # Dekek en kabeh variable *Encodings* nang Array iki
+    face_encoding
+]
+
+known_face_name = [  # pasti paham lah iki gawe opo, nginpute kudu urut karo Array 'known_face' ygy
+    'Your Name'
+]
+
+# DEKLARASI SEMUA VARIABLE & ARRAY
+face_locations = []
+face_encodings = []
+face_names = []
+face_loc_temp = []
+l = 0
+closed_same_face = False
+process_this_frame = True
+
+# Iki variable gae nampilno FPS
+ptime = 0
+ctime = 0
+
+
+while True:
+    # print(f_encoding)
+    ret, frame = cam.read()
+
+    # Nah iki gae FPS e, lek ndek python cara mencari FPS itu diawali pake 'time()'
+    ctime = time.time()
+
+    # lek sek ga faham mending dicoba siji siji ae variable e, gae 'print(var)'
+    fps = 1 / (ctime-ptime)
+    ptime = ctime
+
+    # nah lek iki gae ngekek i text/FPS text Realtime nang CV2 e
+    cv2.putText(frame, f'FPS: {int(fps)}', (20, 70),
+                cv2.FONT_HERSHEY_PLAIN, 2, (255, 100, 0), 3)
+
+    if process_this_frame:
+
+        # resize iki gae ngecrop frame e, cek face encodings e cepet
+        resiz = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
+
+        # kalo ini mengubah warna dari BGR (CV2) => ke warna RGB (yang dipakai sama library/package Face-recognition)
+        rgb_small_frame = resiz[:, :, ::-1]
+
+        if (face_loc_temp != face_locations):  # Oke lek iki fungsine engkok gawe mengoptimalkan FPS e, pokok iku tujuan utama e
+            l = 0                              # lek dijelasno angel rek, mending nyoba o dewe cek ga tambah bingung
+        face_loc_temp = face_locations          # Ini juga nanti fungsinya buat mengoptimalkan FPS
+        face_locations = face_recognition.face_locations(rgb_small_frame)  # Nah kalo ini buat mendeteksi letak/lokasi wajahnya yang diubah 
+                                                                           # ke dalam bentuk integer (bukan menghafal wajah, tapi hanya mendeteksi wajah)
+       
+        if (face_loc_temp == face_locations and l == 0):
+            face_encodings = face_recognition.face_encodings(rgb_small_frame.astype('uint8'), face_locations) # Lek iki baru fungsi utama ne gawe mengenal wajah (FACE RECOGNITION)
+            l = 1
+
+        face_names = []
+        for face_encoding in face_encodings:
+            same = face_recognition.compare_faces(known_face, face_encoding, tolerance=0.55) # iki gawe membandingkan wajah seng ndek frame, 
+                                                                                             # ambek wajah seng ndek file iku maeng (Variable)
+                                                                                             # 'tolerance' iku tingkat akurasi e
+            
+            name = "ID2023" # iki Nama default e lek misal ganok wajah seng podo mbek variable sg maeng
+
+            face_disc = face_recognition.face_distance(known_face, face_encoding)  # AJGGG IKI OPO YO AKU RODOK LALI, POKOK FUNGSINE IKU MIRIP KARO 'compare_faces'
+            closed_same_face = np.argmin(face_disc)   # np.argmin iku mencari nilai terkecil dari sebuah Array, tapi hasilnya di execute sebagai index (lek sek ga faham delok gugel)
+
+            # print(face_encoding) ## LEK PINGIN NGERTI FACE ENCODING IKU HASILE YOKPO, IKI UNCOMMENT EN
+            
+            if same[closed_same_face]:
+                name = known_face_name[closed_same_face]
+
+            face_names.append(name)
+
+    process_this_frame = not process_this_frame
+
+    for (atas, kanan, bawah, kiri), name in zip(face_locations, face_names):
+        atas *= 4
+        kanan *= 4
+        bawah *= 4
+        kiri *= 4
+
+        cv2.rectangle(frame, (kiri, atas), (kanan, bawah), (255, 5, 0), 1)
+        cv2.rectangle(frame, (kiri, bawah-35), (kanan, bawah),
+                      (235, 55, 5), cv2.FILLED)
+        font = cv2.FONT_HERSHEY_DUPLEX
+        cv2.putText(frame, name, (kiri + 6, bawah-6),
+                    font, 1.0, (255, 255, 255), 1)
+
+    cv2.imshow('cam', frame)  # rendering video capture
+    key = cv2.waitKey(1) & 0xFF
+    if key == 27:  # to close video capture
+        break
+
+cam.release()
+cv2.destroyAllWindows()

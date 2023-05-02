@@ -13,7 +13,7 @@ import time
 cam = cv2.VideoCapture(0)
 
 # Fotomu Crop en trus jeneng file e lebokno kene
-face_load = face_recognition.load_image_file("fatra.jpg")
+face_load = face_recognition.load_image_file(".jpg")
 # Face_encodings (definisie golek en dewe) iku gawe deteksi wajah e (lebih tepatnya mendeteksi posisi detail detail wajah)
 face_encoding = face_recognition.face_encodings(face_load)[0]
 # print(t_encoding)

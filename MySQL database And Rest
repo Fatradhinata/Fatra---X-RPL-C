@@ -1,0 +1,249 @@
+# PPPP NGGOLEK O CARA GAWE NGINSTALL PACKAGE/LIBRARY NDEK ISOR IKI KABEH
+# LEK GA DI INSTALL GAISO
+
+import cv2
+import mysql.connector
+import time
+from random import randint, randrange
+from tkinter.ttk import *
+import tkinter as tk
+from tkinter import *
+from PIL import Image, ImageTk
+from ctypes import windll
+import random
+
+
+# NOPAL, ZIDAN & RAMA
+
+# PERTAMA KUDU INSTALL XAMPP TRUS PENCET "START" SENG NDEK BAGIAN "MySQL" KARO "Apache" 
+# MORO NGGAWE DATABASE SEK, NGGOLEK O CARAE AKEH NDEK YOUTUBE
+# DATABASE E JENENGE "face-recog" TRUS TABLE E JENENGE "identity_test"
+# MORO NDEK KONO NGGAWE O 2 COLUMN, JENENGE "id" AMBEK "nama"
+connect = mysql.connector.connect(
+    host="localhost",
+    port="3306", # IKI DELOKEN XAMPP MU, NDEK ATAS E IKU ONOK TULISAN "port", DELOKEN SENG NDEK BARIS E "MySQL", LEK NDEK TEK KU 3306 
+    user="root",
+    password="",
+    database="face-recog")
+
+csr = connect.cursor()
+query = "SELECT * FROM identity_test"
+csr.execute(query)
+rows = csr.fetchall()
+
+faceDetector = cv2.CascadeClassifier('xml/haarcascade_frontalface_default.xml') # TRUS KABEH WAJIB NGGAWE FILE .xml IKI
+# https://github.com/kipr/opencv/blob/master/data/haarcascades/haarcascade_frontalface_default.xml , IKI LINK GITHUB E
+# COPY EN ISI E TRUS NGGAWE FILE SENG JENENGE "haarcascade_frontalface_default.xml" TRUS PASTE EN NDEK KONO
+# ISORE IKI GAUSAH 
+
+windll.shcore.SetProcessDpiAwareness(1)
+pp = 0
+gnemon = 0
+root = Tk()
+
+cam = cv2.VideoCapture(0)
+root.attributes("-fullscreen", True)
+root.title("Face-Recognition")
+
+lbl = Label(root, width=0)
+lbl.place(relx=0.5, rely=0.40, anchor=CENTER)
+
+
+d_data=1
+faceID = 0
+prevT = 0
+bbl = []
+d_bool_IO23 = False
+complete_bool = False
+hasil = 0
+faceNM = ''
+bye = False
+
+inpt = Entry(root,textvariable='', width=0)
+l = Label(root, text = "", font=('Poppins Medium',13), fg="#969696")
+l.place(relx=0.12, rely=0.73)
+
+
+def register(event):
+    global inpt, l, inpt, register_btn
+    # cam.release()
+    cam.set(cv2.CAP_PROP_FRAME_WIDTH, 800)
+    cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 100)
+    minW = 0.1*cam.get(3)
+    minH = 0.1*cam.get(4)
+    # frame.destroy()
+    l3.destroy()
+    btn1.destroy()
+    l2.destroy()
+    cam2lbl()
+    l.config(text = "\" Isi Nama mu Terlebih Dahulu ! \"")
+
+    def stateENM(event): 
+        inpt.config(state=NORMAL)
+        inpt.delete(0, END)
+
+    inpt = Entry(root,textvariable='', width=20, font=('Arial', 12, 'normal'))
+    inpt.place(relx=0.7, rely=0.5)
+    inpt.insert(0, "Your Name")
+    inpt.config(state=DISABLED)
+    inpt.bind("<Button-1>", stateENM)
+
+    register_btn = Button(root, font=('Poppins SemiBold',11), text='REGISTER', bg='dodgerblue', fg='white', width=13, height=1 ,bd=10,
+              borderwidth=3, highlightcolor='#59C3FF', highlightthickness=3, highlightbackground="#59C3FF" ,command=dtbs_IO_insert)
+    register_btn.place(relx=0.76, rely=0.60, anchor=CENTER)
+
+    img2 = ImageTk.PhotoImage(Image.open("img/done.png"))
+    # print(img2)
+    lbl.place(relx=0.25, rely=0.35)
+    root.update()
+    return minW, minH
+
+
+
+def dtbs_IO_insert() :
+    global inpt, l, d_bool_IO23, faceNM
+
+    d_bool_IO23 = True
+
+    faceNM = inpt.get()
+    print("1 Clicked", faceNM)
+    for row in rows:
+        faceID = row[0]+1
+        if (faceNM != row[1]) :
+            bbl.append(0)
+            # break
+        else :
+            bbl.append(1)
+            # break
+    x=0
+    for i in bbl:
+        if(i == 1) :
+            print("Nama sudah ada dalam Data !!!")
+            faceID = rows[x][0]
+            break;
+            
+        x+=1
+        # if len(bbl) == x+1 and i == 0:
+
+    if 1 not in bbl :
+        connect.commit()
+        l.config(text="\" Nama Sudah Dimasukkan Ke dalam Data \"")
+        faceID = rows[x-1][0] + 1
+
+
+
+def welcome_IO():
+    global faceNM, bye
+
+    lbl.destroy()
+    inpt.destroy()
+    register_btn.destroy()
+    l.destroy()
+
+    parent = Frame(root)
+    l4 = Label(parent, text = "Welcome, {}".format(faceNM), font=('Poppins SemiBold', 18), fg="Black").pack(fill='x')
+    parent.pack(expand=1)
+
+    bye = True
+
+
+
+
+btn1 = Button(root, font=('Poppins SemiBold',12), text='Coba Login', bg='dodgerblue', fg='white', width=35,bd=10,
+              borderwidth=6, highlightcolor='#59C3FF', highlightthickness=3, highlightbackground="#59C3FF" ,command=root.destroy)
+btn1.place(relx=0.5, rely=0.80, anchor=CENTER)
+l2 = Label(root, text = "Belum Memiliki akun ?", font=('Poppins Medium',12), fg="black")
+l2.place(relx=0.424, rely=0.85)
+frame = Frame(root)
+frame.place(relwidth=0.06, relheight=0.09, relx=0.5425, rely=0.85)
+l3 = Label(frame, text = "Daftar !", font=('Poppins Medium',12), fg="dodgerblue")
+l3.place(relx=0, rely=0)
+l3.bind("<Button-1>", register)
+
+recognizer = cv2.face.LBPHFaceRecognizer_create()
+
+recognizer.read('xml/training.xml')
+id = ''
+cam.set(cv2.CAP_PROP_FRAME_WIDTH, 1000)
+cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 700)
+minW = 0.1*cam.get(3)
+minH = 0.1*cam.get(4)
+start_IO23_bool = False
+while True:
+    root.update()
+    ret, frame = cam.read()
+    frame = cv2.flip(frame, 1)
+    abuAbu = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    if bye != True:
+        faces = faceDetector.detectMultiScale(
+            abuAbu, 1.2, 8, minSize=(round(minW), round(minH)),)
+        currentT = time.time()
+        if d_bool_IO23 == True and int(currentT) % 2 == 0 and int(currentT) != int(prevT) or d_bool_IO23 == True and start_IO23_bool == True:
+            start_IO23_bool = True
+            if(int(hasil) == 0) :
+                countdown = int(currentT)+3
+            hasil = countdown - int(currentT)
+            if hasil == 0 :
+                hasil == 1
+            l.config(text = "\" Tahan Posisi Wajahmu Selama {} detik \"".format(hasil))
+            print(hasil)
+
+        if complete_bool == True :
+            l.config(text="\" Record Complete \"")
+            if complete_bool == True and int(currentT) % 3 == 0 and int(currentT) != int(prevT):
+                complete_bool = False
+                welcome_IO()
+
+        for (x, y, w, h) in faces:
+            frame = cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
+            id, confidence = recognizer.predict(abuAbu[y:y+h, x:x+w])
+            # print(recognizer.predict(abuAbu[x:x+w]))
+            # print(confidence, id)
+            nameID = 'Unknown'
+
+            if int(currentT) % 3 == 0 and int(currentT) != int(prevT) and d_bool_IO23 == True:
+                fileName = 'face'+str(faceID)+'.'+str(d_data)+ str(random.randrange(100, 999)) + '.jpg'
+                d_data += 1
+                # cv2.imwrite('faceData/' + fileName,frame)
+            prevT = currentT
+
+            if confidence <= 60:
+                for row in rows:
+                    if (id == row[0]):
+                        nameID = row[1]
+                        break
+                confidencetxt = " {0}%".format(round(100-confidence))
+            else:
+                confidencetxt = " {0}%".format(round(100-confidence))
+
+            if confidence >= 100:
+                confidencetxt = " 0%"
+
+            font = cv2.FONT_HERSHEY_DUPLEX
+            cv2.putText(frame, str(nameID), (x+5, y-5),
+                        font, 1, (200, 255, 100), 2)
+            if (int(confidence) < 0):
+                confidencetxt = '0'
+            cv2.putText(frame, str(confidencetxt),
+                        (x+5, y+h-5), font, 1, (255, 255, 0), 2)
+        framecv2 = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        def cam2lbl():
+            img = Image.fromarray(framecv2)
+            imgTk = ImageTk.PhotoImage(image=img)
+            lbl.imgTk = imgTk
+            lbl.configure(image=imgTk)
+        if(bye == False):
+            cam2lbl()   
+        key = cv2.waitKey(1) & 0xFF
+        def close_win(e):
+            root.destroy()
+        root.bind('<Escape>', lambda e: close_win(e))
+        
+    if d_data>5 :
+        d_bool_IO23 = False
+        complete_bool = True
+        d_data = 0
+    if key == 27:  # to close video capture
+        root.destroy()
+        break

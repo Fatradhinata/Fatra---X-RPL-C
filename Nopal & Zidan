@@ -13,7 +13,7 @@ from ctypes import windll
 import random
 
 
-# NOPAL & ZIDAN
+# NOPAL, ZIDAN & RAMA
 
 # PERTAMA KUDU INSTALL XAMPP TRUS PENCET "START" SENG NDEK BAGIAN "MySQL" KARO "Apache" 
 # MORO NGGAWE DATABASE SEK, NGGOLEK O CARAE AKEH NDEK YOUTUBE
@@ -21,7 +21,7 @@ import random
 # MORO NDEK KONO NGGAWE O 2 COLUMN, JENENGE "id" AMBEK "nama"
 connect = mysql.connector.connect(
     host="localhost",
-    port="3306",
+    port="3306", # IKI DELOKEN XAMPP MU, NDEK ATAS E IKU ONOK TULISAN "port", DELOKEN SENG NDEK BARIS E "MySQL", LEK NDEK TEK KU 3306 
     user="root",
     password="",
     database="face-recog")
@@ -31,6 +31,9 @@ query = "SELECT * FROM identity_test"
 csr.execute(query)
 rows = csr.fetchall()
 
+faceDetector = cv2.CascadeClassifier('xml/haarcascade_frontalface_default.xml') # TRUS KABEH WAJIB NGGAWE FILE .xml IKI
+# https://github.com/kipr/opencv/blob/master/data/haarcascades/haarcascade_frontalface_default.xml , IKI LINK GITHUB E
+# COPY EN ISI E TRUS NGGAWE FILE SENG JENENGE "haarcascade_frontalface_default.xml" TRUS PASTE EN NDEK KONO
 # ISORE IKI GAUSAH 
 
 windll.shcore.SetProcessDpiAwareness(1)
@@ -123,7 +126,6 @@ def dtbs_IO_insert() :
         # if len(bbl) == x+1 and i == 0:
 
     if 1 not in bbl :
-        # csr.execute("INSERT INTO identity_test(id, nama) VALUES({}, '{}')".format(faceID, faceNM))
         connect.commit()
         l.config(text="\" Nama Sudah Dimasukkan Ke dalam Data \"")
         faceID = rows[x-1][0] + 1
@@ -158,11 +160,6 @@ l3 = Label(frame, text = "Daftar !", font=('Poppins Medium',12), fg="dodgerblue"
 l3.place(relx=0, rely=0)
 l3.bind("<Button-1>", register)
 
-
-
-address = "http://192.168.1.4:8080/video"
-
-faceDetector = cv2.CascadeClassifier('xml/haarcascade_frontalface_default.xml')
 recognizer = cv2.face.LBPHFaceRecognizer_create()
 
 recognizer.read('xml/training.xml')

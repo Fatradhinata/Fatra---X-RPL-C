@@ -214,25 +214,22 @@ while True:
                 # cv2.imwrite('faceData/' + fileName,frame)
             prevT = currentT
 
-            if confidence <= 60:
-                for row in rows:
-                    if (id == row[0]):
-                        nameID = row[1]
-                        break
-                confidencetxt = " {0}%".format(round(100-confidence))
-            else:
-                confidencetxt = " {0}%".format(round(100-confidence))
+            if os.path.exists('xml/training.xml'):
+                if confidence <= 60:
+                    for row in rows:
+                        if (id == row[0]):
+                            nameID = row[1]
+                            break
+                    confidencetxt = " {0}%".format(round(100-confidence))
+                else:
+                    confidencetxt = " {0}%".format(round(100-confidence))
 
-            if confidence >= 100:
-                confidencetxt = " 0%"
+                if confidence >= 100:
+                    confidencetxt = " 0%"
 
             font = cv2.FONT_HERSHEY_DUPLEX
             cv2.putText(frame, str(nameID), (x+5, y-5),
                         font, 1, (200, 255, 100), 2)
-            if (int(confidence) < 0):
-                confidencetxt = '0'
-            cv2.putText(frame, str(confidencetxt),
-                        (x+5, y+h-5), font, 1, (255, 255, 0), 2)
         framecv2 = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         def cam2lbl():

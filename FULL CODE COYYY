@@ -341,7 +341,7 @@ while True:
 
             if hasil==0:
                 back.destroy()
-                utama()
+                utama('')
                 timer_ = False
                 start_ = False
                 xml_bool = False
